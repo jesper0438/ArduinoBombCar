@@ -179,7 +179,6 @@ void checkAllSensors() {
     allOk = false;
   }
   if (allOk == true) {
-    cruiseControl();
   }
 
 }
@@ -252,9 +251,9 @@ void loop()
 
 
 
-
-  trackLine();
   checkAllSensors();
+  trackLine();
+  
 
 
 }
