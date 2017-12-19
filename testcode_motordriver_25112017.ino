@@ -1,16 +1,17 @@
 #include <SparkFunMiniMoto.h>
 
-//Quintijn en Marlon
-
 // Attributes
 // Create two MiniMoto instances, with different address settings.
 MiniMoto motor0(0xC4); // A1 = 1, A0 = clear
 MiniMoto motor1(0xC0); // A1 = 1, A0 = 1 (default)
 
-#define FAULTN  16     // Pin used for fault detection.
-#define LS 5
-#define CS 4
-#define RS 3
+#define FAULTN  16     // Pin used for fault detection
+
+
+#define LS 5  // Left Linetrack Sensor
+#define CS 4 // Center Linetrack Sensor
+#define RS 3 // Right Linetrack Sensor
+
 //Assign sensorpins to ports
 int echoPin[3] = {7, 11, 9, }; // Echo Pin
 int trigPin[3] = {6, 10, 8, }; // Trigger Pin
@@ -19,32 +20,39 @@ int trigPin[3] = {6, 10, 8, }; // Trigger Pin
 int maximumRange = 200; // Maximum range needed
 int minimumRange = 0; // Minimum range needed
 
-long durationF, distanceF;
-long durationL, distanceL;
-long durationR, distanceR;
+long durationF, distanceF; // Forward Sensor
+long durationL, distanceL; // Left Sensor
+long durationR, distanceR; // Right Sensor
 
 void setup()
 {
-  Serial.begin(9600);
+  //Serial.begin(9600);
   Serial.println("Hello, world!");
   pinMode(FAULTN, INPUT);
-  //Voorzijde
+
+  // Assign Pins
+
+  //Front
   pinMode(trigPin[0], OUTPUT);
   pinMode(echoPin[0], INPUT);
-  //Linkerzijde
+
+  //Left
   pinMode(trigPin[1], OUTPUT);
   pinMode(echoPin[1], INPUT);
-  //Rechterzijde
+
+  //Right
   pinMode(trigPin[2], OUTPUT);
   pinMode(echoPin[2], INPUT);
 
 }
 
+// Normal forward speed
 void cruiseControl() {
   motor0.drive(25);
   motor1.drive(25);
 }
 
+// Slow forward speed
 void slowCruiseControl() {
   motor0.drive(15);
   motor1.drive(15);
@@ -67,18 +75,22 @@ void turnLeft()
   motor0.drive(-20);
   motor1.drive(20);
 }
-void turnLittleRight()
+
+//Turning left when tracking line
+void turnLineRight()
 {
-  motor0.drive(15);
+  motor0.drive(10);
   motor1.drive(0);
 }
 
-void turnLittleLeft()
+//Turning right when tracking line
+void turnLineLeft()
 {
   motor0.drive(0);
-  motor1.drive(15);
+  motor1.drive(10);
 }
 
+// Reverse fast, then resume
 void hardReverse()
 {
   motor0.drive(-40);
@@ -86,6 +98,7 @@ void hardReverse()
   //delay(100);
 }
 
+//Reverse soft, then resume
 void softReverse() {
   motor0.drive(-10);
   motor1.drive(-10);
@@ -109,11 +122,11 @@ void calcDistance() {
     turn LED OFF to indicate successful reading. */
 void printReadings() {
 
-  Serial.println("Voorzijde: ");
+  Serial.println("Front: ");
   Serial.println(distanceF);
-  Serial.println("Links: ");
+  Serial.println("Left: ");
   Serial.println(distanceL);
-  Serial.println("Rechts: ");
+  Serial.println("Right: ");
   Serial.println(distanceR);
 }
 
@@ -171,11 +184,11 @@ void checkAllSensors() {
     allOk = false;
   }
   if (checkLeftSensor() == false) {
-    delay(500);
+    delay(250);
     allOk = false;
   }
   if (checkRightSensor() == false) {
-    delay(500);
+    delay(250);
     allOk = false;
   }
   if (allOk == true) {
@@ -188,13 +201,13 @@ void trackLine() {
     slowCruiseControl();
   }
   else if (digitalRead(RS) == false) {
-      brake();
-      turnLittleLeft();
-    }
-    else if (digitalRead(LS) == false) {
-      brake();
-      turnLittleRight();
-    }
+    brake();
+    turnLineLeft();
+  }
+  else if (digitalRead(LS) == false) {
+    brake();
+    turnLineRight();
+  }
   else {
     slowCruiseControl();
   }
@@ -253,7 +266,7 @@ void loop()
 
   checkAllSensors();
   trackLine();
-  
+
 
 
 }
